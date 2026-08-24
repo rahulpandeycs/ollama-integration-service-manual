@@ -1,11 +1,13 @@
 package com.app.playerservicejava.service;
 
+import com.app.playerservicejava.exception.PageOutOfRangeException;
 import com.app.playerservicejava.model.Player;
-import com.app.playerservicejava.model.Players;
 import com.app.playerservicejava.repository.PlayerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,11 +19,26 @@ public class PlayerService {
     @Autowired
     private PlayerRepository playerRepository;
 
-    public Players getPlayers() {
-        Players players = new Players();
-        playerRepository.findAll()
-                .forEach(players.getPlayers()::add);
-        return players;
+    public Page<Player> getPlayers(Pageable pageable) {
+        Page<Player> page = playerRepository.findAll(pageable);
+
+        int requestedPage = pageable.getPageNumber();
+
+        boolean pageIsOutOfRange =
+                (page.getTotalPages() > 0 &&
+                        requestedPage >= page.getTotalPages())
+                        ||
+                        (page.getTotalPages() == 0 &&
+                                requestedPage > 0);
+
+        if (pageIsOutOfRange) { // Return 400 bad for out of range query
+            throw new PageOutOfRangeException(
+                    requestedPage,
+                    page.getTotalPages()
+            );
+        }
+
+        return page;
     }
 
     public Optional<Player> getPlayerById(String playerId) {
