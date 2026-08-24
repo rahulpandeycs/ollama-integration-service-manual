@@ -1,5 +1,6 @@
 package com.app.playerservicejava.service.chat;
 
+import com.app.playerservicejava.model.Player;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.models.Model;
@@ -41,4 +42,35 @@ public class ChatClientService {
         return response.getResponse();
     }
 
-}
+    public String generateNickname(
+            Player player,
+            String country)
+            throws OllamaBaseException, IOException, InterruptedException {
+        String model = OllamaModelType.TINYLLAMA;
+
+        PromptBuilder promptBuilder =
+                new PromptBuilder()
+                        .addLine(
+                                "Generate exactly one short and respectful nickname "
+                                        + "for the baseball player below."
+                        )
+                        .addLine(
+                                "Player: "
+                                        + player.getFirstName()
+                                        + " "
+                                        + player.getLastName()
+                        )
+                        .addLine("Country: " + country)
+                        .addLine(
+                                "Return only the nickname. "
+                                        + "Do not provide an explanation, list, "
+                                        + "quotation marks, or additional text."
+                        );
+
+        OllamaResult response = ollamaAPI.generate(model, promptBuilder.build(), false, new OptionsBuilder().setNumPredict(20).build());
+        return response.getResponse() == null
+                ? ""
+                : response.getResponse().trim();
+    }
+
+    }
