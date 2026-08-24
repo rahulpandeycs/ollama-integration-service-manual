@@ -2,6 +2,8 @@
 
 Player Service is a backend application that serves baseball player data. In addition, Player service integrates with [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md), which allows us to run the [tinyllama LLM]((https://ollama.com/library/tinyllama)) locally.
 
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the component diagram, models/schema, interaction layer, and data-flow diagrams.
+
 ## Dependencies
 
 - [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
