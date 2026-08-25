@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,6 +39,12 @@ public class PlayerService {
             return Optional.empty();
         }
         return player;
+    }
+
+    public List<Player> getPlayersByIds(Collection<String> playerIds) {
+        List<Player> players = new ArrayList<>();
+        playerRepository.findAllById(playerIds).forEach(players::add);
+        return players;
     }
 
 }

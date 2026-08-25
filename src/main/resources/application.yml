@@ -22,4 +22,8 @@ server:
   error:
     include-message: always
 
+player-service-model:
+  base-url: ${PLAYER_SERVICE_MODEL_BASE_URL:http://localhost:5000}
+  connect-timeout: ${PLAYER_SERVICE_MODEL_CONNECT_TIMEOUT:2s}
+  read-timeout: ${PLAYER_SERVICE_MODEL_READ_TIMEOUT:10s}
 

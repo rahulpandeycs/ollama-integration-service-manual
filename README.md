@@ -45,6 +45,24 @@ Player Service is a backend application that serves baseball player data. In add
       1. Open your browser and visit `http://localhost:8080/v1/players`
       2. If the application is running successfully, you will see player data appear in the browser
 
+### Generate a Similar-Player Team
+
+Start the Python model service on port `5000`, then call the Java endpoint:
+
+```shell
+curl --location 'http://localhost:8080/v1/players/aaronha01/team' \
+  --header 'Content-Type: application/json' \
+  --data '{"teamSize": 5}'
+```
+
+The Java service calls the model service at `POST /team/generate`, resolves the returned player IDs, and returns the recommendation metadata together with the full player records.
+
+Configure another model-service address with:
+
+```shell
+PLAYER_SERVICE_MODEL_BASE_URL=http://localhost:5000 mvn spring-boot:run
+```
+
 ### Part 3: Start LLM Docker Container
 
 Player service integrates with Ollama 🦙, which allows us to run LLMs locally. This app runs [tinyllama](https://ollama.com/library/tinyllama) model.
