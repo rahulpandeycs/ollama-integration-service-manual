@@ -1,6 +1,7 @@
 package com.app.playerservicejava.controller;
 
 import com.app.playerservicejava.model.Player;
+import com.app.playerservicejava.model.PlayerResponse;
 import com.app.playerservicejava.model.Players;
 import com.app.playerservicejava.service.PlayerService;
 import jakarta.annotation.Resource;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -20,9 +22,15 @@ public class PlayerController {
     private PlayerService playerService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Players> getPlayers() {
+    public ResponseEntity<PlayerResponse> getPlayers(
+            @RequestParam(value = "isAdmin", defaultValue = "false") boolean isAdmin) {
         Players players = playerService.getPlayers();
-        return ok(players);
+        PlayerResponse playerResponse = new PlayerResponse(players.getPlayers().stream()
+                .map(player -> new PlayerResponse.Name(
+                        player.getFirstName(),
+                        isAdmin ? player.getLastName() : null))
+                .collect(Collectors.toList()));
+        return ok(playerResponse);
     }
 
     @GetMapping("/{id}")
