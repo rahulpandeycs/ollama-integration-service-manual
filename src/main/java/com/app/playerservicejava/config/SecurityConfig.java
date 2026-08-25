@@ -51,10 +51,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/v1/players",
                                 "/v1/players/**"
-                        ).hasAnyRole("ADMIN", "USER")
-                        .anyRequest().permitAll()
+                        ).permitAll()
                 )
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.FORBIDDEN)))
                 .httpBasic(httpBasic -> {});
 
         return http.build();
