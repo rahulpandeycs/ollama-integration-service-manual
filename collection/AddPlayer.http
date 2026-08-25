@@ -1,0 +1,22 @@
+POST http://localhost:8080/v1/players
+Content-Type: application/json
+
+{
+  "firstName": "Hank",
+  "lastName": "Aaron",
+  "birthYear": "1934",
+  "birthMonth": "2",
+  "birthDay": "5",
+  "birthCountry": "USA",
+  "birthState": "AL",
+  "birthCity": "Mobile",
+  "givenName": "Henry Louis",
+  "weight": "180",
+  "height": "72",
+  "bats": "R",
+  "throwStats": "R",
+  "debut": "1954-04-13",
+  "finalGame": "1976-10-03",
+  "retroId": "aaroh101",
+  "bbrefId": "aaronha01"
+}
