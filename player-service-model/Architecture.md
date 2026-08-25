@@ -21,7 +21,7 @@ The Java application does not load the `.joblib` file directly. The Python servi
 
 ## Model Type
 
-The saved model is a scikit-learn `NearestNeighbors` model.
+The saved model is a versioned `SimilarityModel` bundle containing a scikit-learn `NearestNeighbors` estimator, its fitted preprocessing statistics, the player ID ordering, configuration, training data hash, and evaluation metadata.
 
 It is an unsupervised similarity model. It does not:
 
@@ -33,16 +33,16 @@ It is an unsupervised similarity model. It does not:
 
 It finds players whose feature vectors are closest to the requested player or profile.
 
-The model is serialized using `joblib`:
+The model bundle is serialized using `joblib`:
 
 ```python
-joblib.dump(nn_model, "team_model.joblib")
+joblib.dump(similarity_model, "team_model.joblib")
 ```
 
-At application startup, the model is loaded once:
+At application startup, the model bundle is loaded once:
 
 ```python
-nn_model = joblib.load("team_model.joblib")
+similarity_model = joblib.load("team_model.joblib")
 ```
 
 ## Training Data
@@ -118,15 +118,16 @@ Missing numeric feature values are replaced with `0.0`, which represents the mea
 
 ## Training Process
 
-The training notebook performs these steps:
+The reproducible `a4a_model.model` training module, invoked through the stable `a4a_model.train` entrypoint, performs these steps:
 
 1. Load `a4a_model/player.csv` into a pandas DataFrame.
 2. Create the birth-date, height, and weight features.
 3. Normalize batting and throwing hand.
 4. Fill missing numeric values.
 5. Train a `NearestNeighbors` model using the five engineered features.
-6. Save the model to `team_model.joblib`.
-7. Save the enriched player data to `a4a_model/features_db.csv`.
+6. Compare a bounded set of distance metrics and neighbor counts automatically.
+7. Save the selected model bundle to `team_model.joblib`.
+8. Save the enriched player data and metadata/evaluation report to `a4a_model/features_db.csv` and `a4a_model/model_metrics.json`.
 
 The model is configured with:
 
@@ -229,6 +230,7 @@ curl \
 {
   "seed_id": "abbotji01",
   "prediction_id": "38f5f02f-b1be-4282-8d0e-865b3995d50a",
+  "model_version": "similarity-...",
   "team_size": 10,
   "member_ids": [
     "abbotji01",
@@ -287,15 +289,27 @@ The `feedback` value must be:
 }
 ```
 
-Negative feedback adds the member to an in-memory exclusion set for the seed player.
+Negative feedback adds the member to an in-memory exclusion set for the seed player. Feedback is accepted only when the seed and member belong to the referenced prediction. Generation and feedback events are emitted as structured JSON logs and can also be appended to a file with `FEEDBACK_LOG_PATH`.
 
 Important limitations:
 
 - Feedback is not persisted.
 - Feedback is lost when the process restarts.
 - Positive feedback currently does not improve ranking.
-- The prediction ID is returned but is not currently used to validate the recommendation.
-- The service does not verify that `member_id` belongs to the original prediction.
+- Prediction records and exclusions are process-local and are lost when the service restarts.
+- A durable event store is required for long-term feedback-based quality monitoring.
+
+### Runtime monitoring
+
+`GET /metrics` returns request counters, error and timeout counts, feedback outcomes, average generation latency, and the active model version. `GET /health` reports service status, model version, and the loaded player count.
+
+The model service also logs each recommendation's `prediction_id`, seed, selected members, model version, team size, and nearest-neighbor distance. These events support offline monitoring of acceptance rate, negative feedback rate, latency, and recommendation-distance changes.
+
+The `a4a_model.monitor` command compares a current player CSV with the training reference using feature-level population stability index (PSI) and missing-rate deltas. It produces `stable`, `watch`, or `drift` statuses that can be scheduled as a batch monitoring job.
+
+### Model evaluation limits
+
+The current `player.csv` does not contain labeled similar-player relationships or historical teams. The training command therefore reports coverage and nearest-neighbor distance diagnostics as proxy metrics. Precision, recall, MAP, or NDCG should only be reported after adding a reviewed or historical evaluation set.
 
 ### Generate Description Placeholder
 
@@ -362,7 +376,7 @@ The current model does not use:
 
 Therefore, the model recommends physically and biographically similar players, not necessarily better players or complementary teammates.
 
-The runtime preprocessing is manually recreated in `a4a_model/server.py`. A future improvement would be to save a complete preprocessing and model pipeline so training and inference always use exactly the same transformations.
+Training and runtime inference use the same serialized `FeaturePreprocessor` inside the model bundle. This prevents the training notebook and API from silently drifting apart. The original bare joblib estimator remains readable as a legacy fallback, but new artifacts should be generated with `python -m a4a_model.train` and loaded through the package entrypoint.
 
 The model artifact should only be loaded from a trusted source because `joblib` uses Python object serialization.
 

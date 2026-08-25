@@ -92,6 +92,7 @@ class TeamServiceTests {
         return new ModelTeamGenerateResponse(
                 "aaronha01",
                 "prediction-1",
+                "similarity-test",
                 memberIds.size(),
                 memberIds
         );

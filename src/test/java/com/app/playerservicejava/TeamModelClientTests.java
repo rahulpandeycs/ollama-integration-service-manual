@@ -30,6 +30,7 @@ class TeamModelClientTests {
                         {
                           "seed_id": "aaronha01",
                           "prediction_id": "prediction-1",
+                          "model_version": "similarity-test",
                           "team_size": 2,
                           "member_ids": ["aaronha01", "member-1"]
                         }
@@ -41,6 +42,7 @@ class TeamModelClientTests {
 
         assertEquals("aaronha01", response.seedId());
         assertEquals("prediction-1", response.predictionId());
+        assertEquals("similarity-test", response.modelVersion());
         assertEquals(2, response.teamSize());
         assertEquals(2, response.memberIds().size());
         server.verify();

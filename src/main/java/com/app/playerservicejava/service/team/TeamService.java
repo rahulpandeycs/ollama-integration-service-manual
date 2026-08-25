@@ -52,6 +52,7 @@ public class TeamService {
         return Optional.of(new TeamResponse(
                 modelResponse.seedId(),
                 modelResponse.predictionId(),
+                modelResponse.modelVersion(),
                 modelResponse.teamSize(),
                 memberIds,
                 orderedPlayers

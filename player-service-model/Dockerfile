@@ -13,6 +13,11 @@ COPY . /usr/local/a4a_model
 WORKDIR /usr/local/a4a_model
 RUN poetry config virtualenvs.create false
 RUN poetry install
-WORKDIR /usr/local/a4a_model/a4a_model
+RUN poetry run python -m a4a_model.train \
+      --input a4a_model/player.csv \
+      --model-output a4a_model/team_model.joblib \
+      --features-output a4a_model/features_db.csv \
+      --metrics-output a4a_model/model_metrics.json
+WORKDIR /usr/local/a4a_model
 EXPOSE 5000
-ENTRYPOINT ["python", "server.py"]
+ENTRYPOINT ["python", "-m", "a4a_model.server"]

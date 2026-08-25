@@ -9,6 +9,7 @@ import java.util.List;
 public record ModelTeamGenerateResponse(
         @JsonProperty("seed_id") String seedId,
         @JsonProperty("prediction_id") String predictionId,
+        @JsonProperty("model_version") String modelVersion,
         @JsonProperty("team_size") int teamSize,
         @JsonProperty("member_ids") List<String> memberIds
 ) {

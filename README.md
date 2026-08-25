@@ -57,6 +57,20 @@ curl --location 'http://localhost:8080/v1/players/aaronha01/team' \
 
 The Java service calls the model service at `POST /team/generate`, resolves the returned player IDs, and returns the recommendation metadata together with the full player records.
 
+The model service exposes the active `modelVersion` in the Java response. Train and evaluate the model from `player-service-model` with:
+
+```shell
+cd player-service-model
+poetry install
+poetry run python -m a4a_model.train \
+  --input a4a_model/player.csv \
+  --model-output a4a_model/team_model.joblib \
+  --features-output a4a_model/features_db.csv \
+  --metrics-output a4a_model/model_metrics.json
+```
+
+The model service also provides `GET /health` and `GET /metrics` for runtime health, latency, error, feedback, and model-version monitoring. See [player-service-model/README.md](player-service-model/README.md) for the model workflow and API examples.
+
 Configure another model-service address with:
 
 ```shell

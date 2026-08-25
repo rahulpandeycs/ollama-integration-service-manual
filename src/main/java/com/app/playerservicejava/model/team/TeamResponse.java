@@ -7,6 +7,7 @@ import java.util.List;
 public record TeamResponse(
         String seedId,
         String predictionId,
+        String modelVersion,
         int teamSize,
         List<String> memberIds,
         List<Player> players

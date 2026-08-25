@@ -58,6 +58,7 @@ class PlayerControllerTests {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.seedId").value("aaronha01"))
                 .andExpect(jsonPath("$.predictionId").value("prediction-1"))
+                .andExpect(jsonPath("$.modelVersion").value("similarity-test"))
                 .andExpect(jsonPath("$.teamSize").value(2))
                 .andExpect(jsonPath("$.memberIds[0]").value("aaronha01"))
                 .andExpect(jsonPath("$.players[0].playerId").value("aaronha01"));
@@ -116,6 +117,7 @@ class PlayerControllerTests {
         return new TeamResponse(
                 "aaronha01",
                 "prediction-1",
+                "similarity-test",
                 2,
                 List.of("aaronha01", "member-1"),
                 List.of(player)
