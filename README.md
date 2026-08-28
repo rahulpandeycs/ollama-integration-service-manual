@@ -45,6 +45,55 @@ Player Service is a backend application that serves baseball player data. In add
       1. Open your browser and visit `http://localhost:8080/v1/players`
       2. If the application is running successfully, you will see player data appear in the browser
 
+## Caching approach
+
+Player lookups by ID use Spring Cache with a local Caffeine cache. The cache is applied at the service layer so a cache hit avoids both the repository call and the artificial delay in `getPlayerById`.
+
+The current configuration uses:
+
+- Cache name: `players`
+- Maximum size: 10,000 entries
+- Expiration: 5 minutes after write
+- Cache statistics: enabled
+- Empty results: not cached
+
+A simple map-backed implementation is possible with a `ConcurrentHashMap`:
+
+```java
+private final Map<String, Player> cache = new ConcurrentHashMap<>();
+
+public Optional<Player> getPlayerById(String playerId) {
+    Player cachedPlayer = cache.get(playerId);
+    if (cachedPlayer != null) {
+        return Optional.of(cachedPlayer);
+    }
+
+    Optional<Player> player = playerRepository.findById(playerId);
+    player.ifPresent(value -> cache.put(playerId, value));
+    return player;
+}
+```
+
+Plain `HashMap` should not be used because the API handles concurrent requests. Even with `ConcurrentHashMap`, TTL expiration, maximum size, eviction, invalidation, cache metrics, and concurrent loading would need to be implemented manually. Caffeine provides these capabilities while allowing the service to use `@Cacheable`.
+
+When update and delete APIs are introduced, they should invalidate or refresh the `players` cache using `@CachePut` and `@CacheEvict`. A distributed cache such as Redis should be considered if the service runs across multiple instances and needs shared cache state.
+
+
+Ther eis another way Spring could do this for you!
+```aiignore
+@Bean
+public CacheManager cacheManager() {
+    return new ConcurrentMapCacheManager("players");
+}
+```
+
+if not rpesent included
+```aiignore
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+```
 ### Part 3: Start LLM Docker Container
 
 Player service integrates with Ollama 🦙, which allows us to run LLMs locally. This app runs [tinyllama](https://ollama.com/library/tinyllama) model.
