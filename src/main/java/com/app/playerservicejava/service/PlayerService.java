@@ -6,6 +6,7 @@ import com.app.playerservicejava.repository.PlayerRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class PlayerService {
         }
     }
 
+    @Cacheable(cacheNames = "players", key = "#playerId", unless = "#result == null")
     public Optional<Player> getPlayerById(String playerId) {
         /* simulated network delay */
         try {
@@ -61,6 +63,21 @@ public class PlayerService {
             return Optional.empty();
         }
     }
+
+    /*
+    @CachePut(cacheNames = "players", key = "#playerId")
+    @Transactional
+    public Player updatePlayer(String playerId, Player player) {
+        player.setPlayerId(playerId);
+        return playerRepository.save(player);
+    }
+
+    @CacheEvict(cacheNames = "players", key = "#playerId")
+    @Transactional
+    public void deletePlayer(String playerId) {
+        playerRepository.deleteById(playerId);
+    }
+    */
 
     private void recordFailure(String operation) {
         meterRegistry.counter(FAILURE_METRIC, "operation", operation).increment();

@@ -15,6 +15,11 @@ spring:
   h2:
     console:
       enabled: true
+  cache:
+    type: caffeine
+    cache-names: players
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=5m,recordStats
 
 server:
   port: 8080
@@ -27,4 +32,3 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus
-
